@@ -26741,7 +26741,7 @@
 
 	var _redux = __webpack_require__(226);
 
-	var _reduxSimpleRouter = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"redux-simple-router\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	var _reactRouterRedux = __webpack_require__(241);
 
 	var _session = __webpack_require__(247);
 
@@ -26750,7 +26750,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = (0, _redux.combineReducers)({
-	  routing: _reduxSimpleRouter.routeReducer,
+	  routing: _reactRouterRedux.routeReducer,
 	  session: _session2.default
 	});
 
@@ -26802,7 +26802,7 @@
 
 	var _invariant2 = _interopRequireDefault(_invariant);
 
-	var _routes = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../routes\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	var _routes = __webpack_require__(260);
 
 	var _routes2 = _interopRequireDefault(_routes);
 
@@ -27605,6 +27605,38 @@
 
 	module.exports = isObjectLike;
 
+
+/***/ },
+/* 260 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _reactRouter = __webpack_require__(164);
+
+	var _react = __webpack_require__(6);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _main = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../layouts/main\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _main2 = _interopRequireDefault(_main);
+
+	var _new = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../views/registrations/new\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _new2 = _interopRequireDefault(_new);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = _react2.default.createElement(
+	  _reactRouter.Route,
+	  { component: _main2.default },
+	  _react2.default.createElement(_reactRouter.Route, { path: '/', component: _new2.default })
+	);
 
 /***/ }
 /******/ ]);
