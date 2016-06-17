@@ -26788,6 +26788,12 @@
 	    case _constants2.default.CURRENT_USER:
 	      return _extends({}, state, { currentUser: action.currentUser });
 
+	    case _constants2.default.SESSIONS_ERROR:
+	      return _extends({}, state, { error: action.error });
+
+	    case _constants2.default.USER_SIGNED_OUT:
+	      return initialState;
+
 	    default:
 	      return state;
 	  }
@@ -27650,17 +27656,21 @@
 
 	var _home2 = _interopRequireDefault(_home);
 
-	var _new = __webpack_require__(262);
+	var _new = __webpack_require__(271);
 
 	var _new2 = _interopRequireDefault(_new);
 
-	var _new3 = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../views/sessions/new\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	var _new3 = __webpack_require__(273);
 
 	var _new4 = _interopRequireDefault(_new3);
 
 	var _show = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../views/boards/show\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
 	var _show2 = _interopRequireDefault(_show);
+
+	var _show3 = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../views/cards/show\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _show4 = _interopRequireDefault(_show3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27673,7 +27683,11 @@
 	    _reactRouter.Route,
 	    { path: '/', component: _authenticated2.default },
 	    _react2.default.createElement(_reactRouter.IndexRoute, { component: _home2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '/boards/:id', component: _show2.default })
+	    _react2.default.createElement(
+	      _reactRouter.Route,
+	      { path: '/boards/:id', component: _show2.default },
+	      _react2.default.createElement(_reactRouter.Route, { path: '/cards/:id', component: _show4.default })
+	    )
 	  )
 	);
 
@@ -27695,7 +27709,15 @@
 
 	var _reactRedux = __webpack_require__(249);
 
+	var _sessions = __webpack_require__(262);
+
+	var _sessions2 = _interopRequireDefault(_sessions);
+
 	var _reactRouterRedux = __webpack_require__(241);
+
+	var _header = __webpack_require__(274);
+
+	var _header2 = _interopRequireDefault(_header);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27705,40 +27727,61 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var AuthenticatedUser = function (_React$Component) {
-	  _inherits(AuthenticatedUser, _React$Component);
+	var AuthenticatedContainer = function (_React$Component) {
+	  _inherits(AuthenticatedContainer, _React$Component);
 
-	  function AuthenticatedUser() {
-	    _classCallCheck(this, AuthenticatedUser);
+	  function AuthenticatedContainer() {
+	    _classCallCheck(this, AuthenticatedContainer);
 
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(AuthenticatedUser).apply(this, arguments));
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(AuthenticatedContainer).apply(this, arguments));
 	  }
 
-	  _createClass(AuthenticatedUser, [{
-	    key: 'componenetDidMount',
-	    value: function componenetDidMount() {
+	  _createClass(AuthenticatedContainer, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
 	      var _props = this.props;
 	      var dispatch = _props.dispatch;
 	      var currentUser = _props.currentUser;
 
+	      var phoenixAuthToken = localStorage.getItem('phoenixAuthToken');
 
-	      if (localStroage.getItem('phoenixAuthToken')) {
-	        dispatch(Actions.currentUser());
-	      } else {
-	        dispatch(_reactRouterRedux.routeActions.push('/sign_up'));
+	      if (phoenixAuthToken && !currentUser) {
+	        dispatch(_sessions2.default.currentUser());
+	      } else if (!phoenixAuthToken) {
+	        dispatch(_reactRouterRedux.routeActions.push('/sign_in'));
 	      }
 	    }
 	  }, {
 	    key: 'render',
-	    value: function render() {}
+	    value: function render() {
+	      var _props2 = this.props;
+	      var currentUser = _props2.currentUser;
+	      var dispatch = _props2.dispatch;
+
+
+	      if (!currentUser) return false;
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'application-container' },
+	        _react2.default.createElement(_header2.default, {
+	          currentUser: currentUser,
+	          dispatch: dispatch }),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'main-container' },
+	          this.props.children
+	        )
+	      );
+	    }
 	  }]);
 
-	  return AuthenticatedUser;
+	  return AuthenticatedContainer;
 	}(_react2.default.Component);
 
 	var mapStateToProps = function mapStateToProps(state) {
 	  return {
-	    current_user: state.session.currentUser
+	    currentUser: state.session.currentUser
 	  };
 	};
 
@@ -27754,141 +27797,1115 @@
 	  value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _reactRouterRedux = __webpack_require__(241);
 
-	var _react = __webpack_require__(6);
+	var _constants = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"../constants\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
 
-	var _react2 = _interopRequireDefault(_react);
+	var _constants2 = _interopRequireDefault(_constants);
 
-	var _reactRedux = __webpack_require__(249);
+	var _phoenix = __webpack_require__(263);
 
-	var _reactRouter = __webpack_require__(164);
-
-	var _utils = __webpack_require__(263);
-
-	var _registrations = __webpack_require__(270);
-
-	var _registrations2 = _interopRequireDefault(_registrations);
+	var _utils = __webpack_require__(264);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var RegistrationsNew = function (_React$Component) {
-	  _inherits(RegistrationsNew, _React$Component);
-
-	  function RegistrationsNew() {
-	    _classCallCheck(this, RegistrationsNew);
-
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(RegistrationsNew).apply(this, arguments));
-	  }
-
-	  _createClass(RegistrationsNew, [{
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      (0, _utils.setDocumentTitle)('Sign up');
-	    }
-	  }, {
-	    key: '_handleSubmit',
-	    value: function _handleSubmit(e) {
-	      e.preventDefault();
-
-	      var dispatch = this.props.dispatch;
-
-
-	      var data = {
-	        first_name: this.refs.firstName.value,
-	        last_name: this.refs.lastName.value,
-	        email: this.refs.email.value,
-	        password: this.refs.password.value,
-	        password_confirmation: this.refs.passwordConfirmation.value
-	      };
-
-	      dispatch(_registrations2.default.signUp(data));
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var errors = this.props.errors;
-
-
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'view-container registrations new' },
-	        _react2.default.createElement(
-	          'main',
-	          null,
-	          _react2.default.createElement(
-	            'header',
-	            null,
-	            _react2.default.createElement('div', { className: 'logo' })
-	          ),
-	          _react2.default.createElement(
-	            'form',
-	            { onSubmit: this._handleSubmit.bind(this) },
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'field' },
-	              _react2.default.createElement('input', { ref: 'firstName', type: 'text', placeholder: 'First name', required: true }),
-	              (0, _utils.renderErrorsFor)(errors, 'first_name')
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'field' },
-	              _react2.default.createElement('input', { ref: 'lastName', type: 'text', placeholder: 'Last name', required: true }),
-	              (0, _utils.renderErrorsFor)(errors, 'last_name')
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'field' },
-	              _react2.default.createElement('input', { ref: 'email', type: 'email', placeholder: 'Email', required: true }),
-	              (0, _utils.renderErrorsFor)(errors, 'email')
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'field' },
-	              _react2.default.createElement('input', { ref: 'password', type: 'password', placeholder: 'Password', required: true }),
-	              (0, _utils.renderErrorsFor)(errors, 'password')
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'field' },
-	              _react2.default.createElement('input', { ref: 'passwordConfirmation', type: 'password', placeholder: 'Confirm password', required: true }),
-	              (0, _utils.renderErrorsFor)(errors, 'password_confirmation')
-	            ),
-	            _react2.default.createElement(
-	              'button',
-	              { type: 'submit' },
-	              'Sign up'
-	            )
-	          ),
-	          _react2.default.createElement(
-	            _reactRouter.Link,
-	            { to: '/sign_in' },
-	            'Sign in'
-	          )
-	        )
-	      );
-	    }
-	  }]);
-
-	  return RegistrationsNew;
-	}(_react2.default.Component);
-
-	var mapStateToProps = function mapStateToProps(state) {
-	  return {
-	    errors: state.registration.errors
-	  };
+	function setCurrentUser(dispatch, user) {
+	  dispatch({
+	    type: _constants2.default.CURRENT_USER,
+	    currentUser: user
+	  });
 	};
 
-	exports.default = (0, _reactRedux.connect)(mapStateToProps)(RegistrationsNew);
+	var Actions = {
+	  signIn: function signIn(email, password) {
+	    return function (dispatch) {
+	      var data = {
+	        session: {
+	          email: email,
+	          password: password
+	        }
+	      };
+
+	      (0, _utils.httpPost)('/api/v1/sessions', data).then(function (data) {
+	        localStorage.setItem('phoenixAuthToken', data.jwt);
+	        setCurrentUser(dispatch, data.user);
+	        dispatch(_reactRouterRedux.routeActions.push('/'));
+	      }).catch(function (error) {
+	        error.response.json().then(function (errorJSON) {
+	          dispatch({
+	            type: _constants2.default.SESSIONS_ERROR,
+	            error: errorJSON.error
+	          });
+	        });
+	      });
+	    };
+	  },
+
+	  currentUser: function currentUser() {
+	    return function (dispatch) {
+	      (0, _utils.httpGet)('/api/v1/current_user').then(function (data) {
+	        setCurrentUser(dispatch, data);
+	      }).catch(function (error) {
+	        console.log(error);
+	        dispatch(_reactRouterRedux.routeActions.push('/sign_in'));
+	      });
+	    };
+	  },
+
+	  signOut: function signOut() {
+	    return function (dispatch) {
+	      (0, _utils.httpDelete)('/api/v1/sessions').then(function (data) {
+	        localStroage.removeItem('phoenixAuthToken');
+
+	        dispatch({
+	          type: _constants2.default.USER_SIGNED_OUT
+	        });
+
+	        dispatch(_reactRouterRedux.routeActions.push('/sign_in'));
+	      }).catch(function (error) {
+	        console.log(error);
+	      });
+	    };
+	  }
+
+	};
+
+	exports.default = Actions;
 
 /***/ },
 /* 263 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(exports){
+	"use strict";
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	// Phoenix Channels JavaScript client
+	//
+	// ## Socket Connection
+	//
+	// A single connection is established to the server and
+	// channels are mulitplexed over the connection.
+	// Connect to the server using the `Socket` class:
+	//
+	//     let socket = new Socket("/ws", {params: {userToken: "123"}})
+	//     socket.connect()
+	//
+	// The `Socket` constructor takes the mount point of the socket,
+	// the authentication params, as well as options that can be found in
+	// the Socket docs, such as configuring the `LongPoll` transport, and
+	// heartbeat.
+	//
+	// ## Channels
+	//
+	// Channels are isolated, concurrent processes on the server that
+	// subscribe to topics and broker events between the client and server.
+	// To join a channel, you must provide the topic, and channel params for
+	// authorization. Here's an example chat room example where `"new_msg"`
+	// events are listened for, messages are pushed to the server, and
+	// the channel is joined with ok/error/timeout matches:
+	//
+	//     let channel = socket.channel("rooms:123", {token: roomToken})
+	//     channel.on("new_msg", msg => console.log("Got message", msg) )
+	//     $input.onEnter( e => {
+	//       channel.push("new_msg", {body: e.target.val}, 10000)
+	//        .receive("ok", (msg) => console.log("created message", msg) )
+	//        .receive("error", (reasons) => console.log("create failed", reasons) )
+	//        .receive("timeout", () => console.log("Networking issue...") )
+	//     })
+	//     channel.join()
+	//       .receive("ok", ({messages}) => console.log("catching up", messages) )
+	//       .receive("error", ({reason}) => console.log("failed join", reason) )
+	//       .receive("timeout", () => console.log("Networking issue. Still waiting...") )
+	//
+	//
+	// ## Joining
+	//
+	// Creating a channel with `socket.channel(topic, params)`, binds the params to
+	// `channel.params`, which are sent up on `channel.join()`.
+	// Subsequent rejoins will send up the modified params for
+	// updating authorization params, or passing up last_message_id information.
+	// Successful joins receive an "ok" status, while unsuccessful joins
+	// receive "error".
+	//
+	//
+	// ## Pushing Messages
+	//
+	// From the previous example, we can see that pushing messages to the server
+	// can be done with `channel.push(eventName, payload)` and we can optionally
+	// receive responses from the push. Additionally, we can use
+	// `receive("timeout", callback)` to abort waiting for our other `receive` hooks
+	//  and take action after some period of waiting. The default timeout is 5000ms.
+	//
+	//
+	// ## Socket Hooks
+	//
+	// Lifecycle events of the multiplexed connection can be hooked into via
+	// `socket.onError()` and `socket.onClose()` events, ie:
+	//
+	//     socket.onError( () => console.log("there was an error with the connection!") )
+	//     socket.onClose( () => console.log("the connection dropped") )
+	//
+	//
+	// ## Channel Hooks
+	//
+	// For each joined channel, you can bind to `onError` and `onClose` events
+	// to monitor the channel lifecycle, ie:
+	//
+	//     channel.onError( () => console.log("there was an error!") )
+	//     channel.onClose( () => console.log("the channel has gone away gracefully") )
+	//
+	// ### onError hooks
+	//
+	// `onError` hooks are invoked if the socket connection drops, or the channel
+	// crashes on the server. In either case, a channel rejoin is attemtped
+	// automatically in an exponential backoff manner.
+	//
+	// ### onClose hooks
+	//
+	// `onClose` hooks are invoked only in two cases. 1) the channel explicitly
+	// closed on the server, or 2). The client explicitly closed, by calling
+	// `channel.leave()`
+	//
+
+	var VSN = "1.0.0";
+	var SOCKET_STATES = { connecting: 0, open: 1, closing: 2, closed: 3 };
+	var DEFAULT_TIMEOUT = 10000;
+	var CHANNEL_STATES = {
+	  closed: "closed",
+	  errored: "errored",
+	  joined: "joined",
+	  joining: "joining"
+	};
+	var CHANNEL_EVENTS = {
+	  close: "phx_close",
+	  error: "phx_error",
+	  join: "phx_join",
+	  reply: "phx_reply",
+	  leave: "phx_leave"
+	};
+	var TRANSPORTS = {
+	  longpoll: "longpoll",
+	  websocket: "websocket"
+	};
+
+	var Push = function () {
+
+	  // Initializes the Push
+	  //
+	  // channel - The Channel
+	  // event - The event, for example `"phx_join"`
+	  // payload - The payload, for example `{user_id: 123}`
+	  // timeout - The push timeout in milliseconds
+	  //
+
+	  function Push(channel, event, payload, timeout) {
+	    _classCallCheck(this, Push);
+
+	    this.channel = channel;
+	    this.event = event;
+	    this.payload = payload || {};
+	    this.receivedResp = null;
+	    this.timeout = timeout;
+	    this.timeoutTimer = null;
+	    this.recHooks = [];
+	    this.sent = false;
+	  }
+
+	  _createClass(Push, [{
+	    key: "resend",
+	    value: function resend(timeout) {
+	      this.timeout = timeout;
+	      this.cancelRefEvent();
+	      this.ref = null;
+	      this.refEvent = null;
+	      this.receivedResp = null;
+	      this.sent = false;
+	      this.send();
+	    }
+	  }, {
+	    key: "send",
+	    value: function send() {
+	      if (this.hasReceived("timeout")) {
+	        return;
+	      }
+	      this.startTimeout();
+	      this.sent = true;
+	      this.channel.socket.push({
+	        topic: this.channel.topic,
+	        event: this.event,
+	        payload: this.payload,
+	        ref: this.ref
+	      });
+	    }
+	  }, {
+	    key: "receive",
+	    value: function receive(status, callback) {
+	      if (this.hasReceived(status)) {
+	        callback(this.receivedResp.response);
+	      }
+
+	      this.recHooks.push({ status: status, callback: callback });
+	      return this;
+	    }
+
+	    // private
+
+	  }, {
+	    key: "matchReceive",
+	    value: function matchReceive(_ref) {
+	      var status = _ref.status;
+	      var response = _ref.response;
+	      var ref = _ref.ref;
+
+	      this.recHooks.filter(function (h) {
+	        return h.status === status;
+	      }).forEach(function (h) {
+	        return h.callback(response);
+	      });
+	    }
+	  }, {
+	    key: "cancelRefEvent",
+	    value: function cancelRefEvent() {
+	      if (!this.refEvent) {
+	        return;
+	      }
+	      this.channel.off(this.refEvent);
+	    }
+	  }, {
+	    key: "cancelTimeout",
+	    value: function cancelTimeout() {
+	      clearTimeout(this.timeoutTimer);
+	      this.timeoutTimer = null;
+	    }
+	  }, {
+	    key: "startTimeout",
+	    value: function startTimeout() {
+	      var _this = this;
+
+	      if (this.timeoutTimer) {
+	        return;
+	      }
+	      this.ref = this.channel.socket.makeRef();
+	      this.refEvent = this.channel.replyEventName(this.ref);
+
+	      this.channel.on(this.refEvent, function (payload) {
+	        _this.cancelRefEvent();
+	        _this.cancelTimeout();
+	        _this.receivedResp = payload;
+	        _this.matchReceive(payload);
+	      });
+
+	      this.timeoutTimer = setTimeout(function () {
+	        _this.trigger("timeout", {});
+	      }, this.timeout);
+	    }
+	  }, {
+	    key: "hasReceived",
+	    value: function hasReceived(status) {
+	      return this.receivedResp && this.receivedResp.status === status;
+	    }
+	  }, {
+	    key: "trigger",
+	    value: function trigger(status, response) {
+	      this.channel.trigger(this.refEvent, { status: status, response: response });
+	    }
+	  }]);
+
+	  return Push;
+	}();
+
+	var Channel = exports.Channel = function () {
+	  function Channel(topic, params, socket) {
+	    var _this2 = this;
+
+	    _classCallCheck(this, Channel);
+
+	    this.state = CHANNEL_STATES.closed;
+	    this.topic = topic;
+	    this.params = params || {};
+	    this.socket = socket;
+	    this.bindings = [];
+	    this.timeout = this.socket.timeout;
+	    this.joinedOnce = false;
+	    this.joinPush = new Push(this, CHANNEL_EVENTS.join, this.params, this.timeout);
+	    this.pushBuffer = [];
+	    this.rejoinTimer = new Timer(function () {
+	      return _this2.rejoinUntilConnected();
+	    }, this.socket.reconnectAfterMs);
+	    this.joinPush.receive("ok", function () {
+	      _this2.state = CHANNEL_STATES.joined;
+	      _this2.rejoinTimer.reset();
+	      _this2.pushBuffer.forEach(function (pushEvent) {
+	        return pushEvent.send();
+	      });
+	      _this2.pushBuffer = [];
+	    });
+	    this.onClose(function () {
+	      _this2.socket.log("channel", "close " + _this2.topic);
+	      _this2.state = CHANNEL_STATES.closed;
+	      _this2.socket.remove(_this2);
+	    });
+	    this.onError(function (reason) {
+	      _this2.socket.log("channel", "error " + _this2.topic, reason);
+	      _this2.state = CHANNEL_STATES.errored;
+	      _this2.rejoinTimer.scheduleTimeout();
+	    });
+	    this.joinPush.receive("timeout", function () {
+	      if (_this2.state !== CHANNEL_STATES.joining) {
+	        return;
+	      }
+
+	      _this2.socket.log("channel", "timeout " + _this2.topic, _this2.joinPush.timeout);
+	      _this2.state = CHANNEL_STATES.errored;
+	      _this2.rejoinTimer.scheduleTimeout();
+	    });
+	    this.on(CHANNEL_EVENTS.reply, function (payload, ref) {
+	      _this2.trigger(_this2.replyEventName(ref), payload);
+	    });
+	  }
+
+	  _createClass(Channel, [{
+	    key: "rejoinUntilConnected",
+	    value: function rejoinUntilConnected() {
+	      this.rejoinTimer.scheduleTimeout();
+	      if (this.socket.isConnected()) {
+	        this.rejoin();
+	      }
+	    }
+	  }, {
+	    key: "join",
+	    value: function join() {
+	      var timeout = arguments.length <= 0 || arguments[0] === undefined ? this.timeout : arguments[0];
+
+	      if (this.joinedOnce) {
+	        throw "tried to join multiple times. 'join' can only be called a single time per channel instance";
+	      } else {
+	        this.joinedOnce = true;
+	      }
+	      this.rejoin(timeout);
+	      return this.joinPush;
+	    }
+	  }, {
+	    key: "onClose",
+	    value: function onClose(callback) {
+	      this.on(CHANNEL_EVENTS.close, callback);
+	    }
+	  }, {
+	    key: "onError",
+	    value: function onError(callback) {
+	      this.on(CHANNEL_EVENTS.error, function (reason) {
+	        return callback(reason);
+	      });
+	    }
+	  }, {
+	    key: "on",
+	    value: function on(event, callback) {
+	      this.bindings.push({ event: event, callback: callback });
+	    }
+	  }, {
+	    key: "off",
+	    value: function off(event) {
+	      this.bindings = this.bindings.filter(function (bind) {
+	        return bind.event !== event;
+	      });
+	    }
+	  }, {
+	    key: "canPush",
+	    value: function canPush() {
+	      return this.socket.isConnected() && this.state === CHANNEL_STATES.joined;
+	    }
+	  }, {
+	    key: "push",
+	    value: function push(event, payload) {
+	      var timeout = arguments.length <= 2 || arguments[2] === undefined ? this.timeout : arguments[2];
+
+	      if (!this.joinedOnce) {
+	        throw "tried to push '" + event + "' to '" + this.topic + "' before joining. Use channel.join() before pushing events";
+	      }
+	      var pushEvent = new Push(this, event, payload, timeout);
+	      if (this.canPush()) {
+	        pushEvent.send();
+	      } else {
+	        pushEvent.startTimeout();
+	        this.pushBuffer.push(pushEvent);
+	      }
+
+	      return pushEvent;
+	    }
+
+	    // Leaves the channel
+	    //
+	    // Unsubscribes from server events, and
+	    // instructs channel to terminate on server
+	    //
+	    // Triggers onClose() hooks
+	    //
+	    // To receive leave acknowledgements, use the a `receive`
+	    // hook to bind to the server ack, ie:
+	    //
+	    //     channel.leave().receive("ok", () => alert("left!") )
+	    //
+
+	  }, {
+	    key: "leave",
+	    value: function leave() {
+	      var _this3 = this;
+
+	      var timeout = arguments.length <= 0 || arguments[0] === undefined ? this.timeout : arguments[0];
+
+	      var onClose = function onClose() {
+	        _this3.socket.log("channel", "leave " + _this3.topic);
+	        _this3.trigger(CHANNEL_EVENTS.close, "leave");
+	      };
+	      var leavePush = new Push(this, CHANNEL_EVENTS.leave, {}, timeout);
+	      leavePush.receive("ok", function () {
+	        return onClose();
+	      }).receive("timeout", function () {
+	        return onClose();
+	      });
+	      leavePush.send();
+	      if (!this.canPush()) {
+	        leavePush.trigger("ok", {});
+	      }
+
+	      return leavePush;
+	    }
+
+	    // Overridable message hook
+	    //
+	    // Receives all events for specialized message handling
+
+	  }, {
+	    key: "onMessage",
+	    value: function onMessage(event, payload, ref) {}
+
+	    // private
+
+	  }, {
+	    key: "isMember",
+	    value: function isMember(topic) {
+	      return this.topic === topic;
+	    }
+	  }, {
+	    key: "sendJoin",
+	    value: function sendJoin(timeout) {
+	      this.state = CHANNEL_STATES.joining;
+	      this.joinPush.resend(timeout);
+	    }
+	  }, {
+	    key: "rejoin",
+	    value: function rejoin() {
+	      var timeout = arguments.length <= 0 || arguments[0] === undefined ? this.timeout : arguments[0];
+	      this.sendJoin(timeout);
+	    }
+	  }, {
+	    key: "trigger",
+	    value: function trigger(triggerEvent, payload, ref) {
+	      this.onMessage(triggerEvent, payload, ref);
+	      this.bindings.filter(function (bind) {
+	        return bind.event === triggerEvent;
+	      }).map(function (bind) {
+	        return bind.callback(payload, ref);
+	      });
+	    }
+	  }, {
+	    key: "replyEventName",
+	    value: function replyEventName(ref) {
+	      return "chan_reply_" + ref;
+	    }
+	  }]);
+
+	  return Channel;
+	}();
+
+	var Socket = exports.Socket = function () {
+
+	  // Initializes the Socket
+	  //
+	  // endPoint - The string WebSocket endpoint, ie, "ws://example.com/ws",
+	  //                                               "wss://example.com"
+	  //                                               "/ws" (inherited host & protocol)
+	  // opts - Optional configuration
+	  //   transport - The Websocket Transport, for example WebSocket or Phoenix.LongPoll.
+	  //               Defaults to WebSocket with automatic LongPoll fallback.
+	  //   timeout - The default timeout in milliseconds to trigger push timeouts.
+	  //             Defaults `DEFAULT_TIMEOUT`
+	  //   heartbeatIntervalMs - The millisec interval to send a heartbeat message
+	  //   reconnectAfterMs - The optional function that returns the millsec
+	  //                      reconnect interval. Defaults to stepped backoff of:
+	  //
+	  //     function(tries){
+	  //       return [1000, 5000, 10000][tries - 1] || 10000
+	  //     }
+	  //
+	  //   logger - The optional function for specialized logging, ie:
+	  //     `logger: (kind, msg, data) => { console.log(`${kind}: ${msg}`, data) }
+	  //
+	  //   longpollerTimeout - The maximum timeout of a long poll AJAX request.
+	  //                        Defaults to 20s (double the server long poll timer).
+	  //
+	  //   params - The optional params to pass when connecting
+	  //
+	  // For IE8 support use an ES5-shim (https://github.com/es-shims/es5-shim)
+	  //
+
+	  function Socket(endPoint) {
+	    var _this4 = this;
+
+	    var opts = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	    _classCallCheck(this, Socket);
+
+	    this.stateChangeCallbacks = { open: [], close: [], error: [], message: [] };
+	    this.channels = [];
+	    this.sendBuffer = [];
+	    this.ref = 0;
+	    this.timeout = opts.timeout || DEFAULT_TIMEOUT;
+	    this.transport = opts.transport || window.WebSocket || LongPoll;
+	    this.heartbeatIntervalMs = opts.heartbeatIntervalMs || 30000;
+	    this.reconnectAfterMs = opts.reconnectAfterMs || function (tries) {
+	      return [1000, 2000, 5000, 10000][tries - 1] || 10000;
+	    };
+	    this.logger = opts.logger || function () {}; // noop
+	    this.longpollerTimeout = opts.longpollerTimeout || 20000;
+	    this.params = opts.params || {};
+	    this.endPoint = endPoint + "/" + TRANSPORTS.websocket;
+	    this.reconnectTimer = new Timer(function () {
+	      _this4.disconnect(function () {
+	        return _this4.connect();
+	      });
+	    }, this.reconnectAfterMs);
+	  }
+
+	  _createClass(Socket, [{
+	    key: "protocol",
+	    value: function protocol() {
+	      return location.protocol.match(/^https/) ? "wss" : "ws";
+	    }
+	  }, {
+	    key: "endPointURL",
+	    value: function endPointURL() {
+	      var uri = Ajax.appendParams(Ajax.appendParams(this.endPoint, this.params), { vsn: VSN });
+	      if (uri.charAt(0) !== "/") {
+	        return uri;
+	      }
+	      if (uri.charAt(1) === "/") {
+	        return this.protocol() + ":" + uri;
+	      }
+
+	      return this.protocol() + "://" + location.host + uri;
+	    }
+	  }, {
+	    key: "disconnect",
+	    value: function disconnect(callback, code, reason) {
+	      if (this.conn) {
+	        this.conn.onclose = function () {}; // noop
+	        if (code) {
+	          this.conn.close(code, reason || "");
+	        } else {
+	          this.conn.close();
+	        }
+	        this.conn = null;
+	      }
+	      callback && callback();
+	    }
+
+	    // params - The params to send when connecting, for example `{user_id: userToken}`
+
+	  }, {
+	    key: "connect",
+	    value: function connect(params) {
+	      var _this5 = this;
+
+	      if (params) {
+	        console && console.log("passing params to connect is deprecated. Instead pass :params to the Socket constructor");
+	        this.params = params;
+	      }
+	      if (this.conn) {
+	        return;
+	      }
+
+	      this.conn = new this.transport(this.endPointURL());
+	      this.conn.timeout = this.longpollerTimeout;
+	      this.conn.onopen = function () {
+	        return _this5.onConnOpen();
+	      };
+	      this.conn.onerror = function (error) {
+	        return _this5.onConnError(error);
+	      };
+	      this.conn.onmessage = function (event) {
+	        return _this5.onConnMessage(event);
+	      };
+	      this.conn.onclose = function (event) {
+	        return _this5.onConnClose(event);
+	      };
+	    }
+
+	    // Logs the message. Override `this.logger` for specialized logging. noops by default
+
+	  }, {
+	    key: "log",
+	    value: function log(kind, msg, data) {
+	      this.logger(kind, msg, data);
+	    }
+
+	    // Registers callbacks for connection state change events
+	    //
+	    // Examples
+	    //
+	    //    socket.onError(function(error){ alert("An error occurred") })
+	    //
+
+	  }, {
+	    key: "onOpen",
+	    value: function onOpen(callback) {
+	      this.stateChangeCallbacks.open.push(callback);
+	    }
+	  }, {
+	    key: "onClose",
+	    value: function onClose(callback) {
+	      this.stateChangeCallbacks.close.push(callback);
+	    }
+	  }, {
+	    key: "onError",
+	    value: function onError(callback) {
+	      this.stateChangeCallbacks.error.push(callback);
+	    }
+	  }, {
+	    key: "onMessage",
+	    value: function onMessage(callback) {
+	      this.stateChangeCallbacks.message.push(callback);
+	    }
+	  }, {
+	    key: "onConnOpen",
+	    value: function onConnOpen() {
+	      var _this6 = this;
+
+	      this.log("transport", "connected to " + this.endPointURL(), this.transport.prototype);
+	      this.flushSendBuffer();
+	      this.reconnectTimer.reset();
+	      if (!this.conn.skipHeartbeat) {
+	        clearInterval(this.heartbeatTimer);
+	        this.heartbeatTimer = setInterval(function () {
+	          return _this6.sendHeartbeat();
+	        }, this.heartbeatIntervalMs);
+	      }
+	      this.stateChangeCallbacks.open.forEach(function (callback) {
+	        return callback();
+	      });
+	    }
+	  }, {
+	    key: "onConnClose",
+	    value: function onConnClose(event) {
+	      this.log("transport", "close", event);
+	      this.triggerChanError();
+	      clearInterval(this.heartbeatTimer);
+	      this.reconnectTimer.scheduleTimeout();
+	      this.stateChangeCallbacks.close.forEach(function (callback) {
+	        return callback(event);
+	      });
+	    }
+	  }, {
+	    key: "onConnError",
+	    value: function onConnError(error) {
+	      this.log("transport", error);
+	      this.triggerChanError();
+	      this.stateChangeCallbacks.error.forEach(function (callback) {
+	        return callback(error);
+	      });
+	    }
+	  }, {
+	    key: "triggerChanError",
+	    value: function triggerChanError() {
+	      this.channels.forEach(function (channel) {
+	        return channel.trigger(CHANNEL_EVENTS.error);
+	      });
+	    }
+	  }, {
+	    key: "connectionState",
+	    value: function connectionState() {
+	      switch (this.conn && this.conn.readyState) {
+	        case SOCKET_STATES.connecting:
+	          return "connecting";
+	        case SOCKET_STATES.open:
+	          return "open";
+	        case SOCKET_STATES.closing:
+	          return "closing";
+	        default:
+	          return "closed";
+	      }
+	    }
+	  }, {
+	    key: "isConnected",
+	    value: function isConnected() {
+	      return this.connectionState() === "open";
+	    }
+	  }, {
+	    key: "remove",
+	    value: function remove(channel) {
+	      this.channels = this.channels.filter(function (c) {
+	        return !c.isMember(channel.topic);
+	      });
+	    }
+	  }, {
+	    key: "channel",
+	    value: function channel(topic) {
+	      var chanParams = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	      var chan = new Channel(topic, chanParams, this);
+	      this.channels.push(chan);
+	      return chan;
+	    }
+	  }, {
+	    key: "push",
+	    value: function push(data) {
+	      var _this7 = this;
+
+	      var topic = data.topic;
+	      var event = data.event;
+	      var payload = data.payload;
+	      var ref = data.ref;
+
+	      var callback = function callback() {
+	        return _this7.conn.send(JSON.stringify(data));
+	      };
+	      this.log("push", topic + " " + event + " (" + ref + ")", payload);
+	      if (this.isConnected()) {
+	        callback();
+	      } else {
+	        this.sendBuffer.push(callback);
+	      }
+	    }
+
+	    // Return the next message ref, accounting for overflows
+
+	  }, {
+	    key: "makeRef",
+	    value: function makeRef() {
+	      var newRef = this.ref + 1;
+	      if (newRef === this.ref) {
+	        this.ref = 0;
+	      } else {
+	        this.ref = newRef;
+	      }
+
+	      return this.ref.toString();
+	    }
+	  }, {
+	    key: "sendHeartbeat",
+	    value: function sendHeartbeat() {
+	      if (!this.isConnected()) {
+	        return;
+	      }
+	      this.push({ topic: "phoenix", event: "heartbeat", payload: {}, ref: this.makeRef() });
+	    }
+	  }, {
+	    key: "flushSendBuffer",
+	    value: function flushSendBuffer() {
+	      if (this.isConnected() && this.sendBuffer.length > 0) {
+	        this.sendBuffer.forEach(function (callback) {
+	          return callback();
+	        });
+	        this.sendBuffer = [];
+	      }
+	    }
+	  }, {
+	    key: "onConnMessage",
+	    value: function onConnMessage(rawMessage) {
+	      var msg = JSON.parse(rawMessage.data);
+	      var topic = msg.topic;
+	      var event = msg.event;
+	      var payload = msg.payload;
+	      var ref = msg.ref;
+
+	      this.log("receive", (payload.status || "") + " " + topic + " " + event + " " + (ref && "(" + ref + ")" || ""), payload);
+	      this.channels.filter(function (channel) {
+	        return channel.isMember(topic);
+	      }).forEach(function (channel) {
+	        return channel.trigger(event, payload, ref);
+	      });
+	      this.stateChangeCallbacks.message.forEach(function (callback) {
+	        return callback(msg);
+	      });
+	    }
+	  }]);
+
+	  return Socket;
+	}();
+
+	var LongPoll = exports.LongPoll = function () {
+	  function LongPoll(endPoint) {
+	    _classCallCheck(this, LongPoll);
+
+	    this.endPoint = null;
+	    this.token = null;
+	    this.skipHeartbeat = true;
+	    this.onopen = function () {}; // noop
+	    this.onerror = function () {}; // noop
+	    this.onmessage = function () {}; // noop
+	    this.onclose = function () {}; // noop
+	    this.pollEndpoint = this.normalizeEndpoint(endPoint);
+	    this.readyState = SOCKET_STATES.connecting;
+
+	    this.poll();
+	  }
+
+	  _createClass(LongPoll, [{
+	    key: "normalizeEndpoint",
+	    value: function normalizeEndpoint(endPoint) {
+	      return endPoint.replace("ws://", "http://").replace("wss://", "https://").replace(new RegExp("(.*)\/" + TRANSPORTS.websocket), "$1/" + TRANSPORTS.longpoll);
+	    }
+	  }, {
+	    key: "endpointURL",
+	    value: function endpointURL() {
+	      return Ajax.appendParams(this.pollEndpoint, { token: this.token });
+	    }
+	  }, {
+	    key: "closeAndRetry",
+	    value: function closeAndRetry() {
+	      this.close();
+	      this.readyState = SOCKET_STATES.connecting;
+	    }
+	  }, {
+	    key: "ontimeout",
+	    value: function ontimeout() {
+	      this.onerror("timeout");
+	      this.closeAndRetry();
+	    }
+	  }, {
+	    key: "poll",
+	    value: function poll() {
+	      var _this8 = this;
+
+	      if (!(this.readyState === SOCKET_STATES.open || this.readyState === SOCKET_STATES.connecting)) {
+	        return;
+	      }
+
+	      Ajax.request("GET", this.endpointURL(), "application/json", null, this.timeout, this.ontimeout.bind(this), function (resp) {
+	        if (resp) {
+	          var status = resp.status;
+	          var token = resp.token;
+	          var messages = resp.messages;
+
+	          _this8.token = token;
+	        } else {
+	          var status = 0;
+	        }
+
+	        switch (status) {
+	          case 200:
+	            messages.forEach(function (msg) {
+	              return _this8.onmessage({ data: JSON.stringify(msg) });
+	            });
+	            _this8.poll();
+	            break;
+	          case 204:
+	            _this8.poll();
+	            break;
+	          case 410:
+	            _this8.readyState = SOCKET_STATES.open;
+	            _this8.onopen();
+	            _this8.poll();
+	            break;
+	          case 0:
+	          case 500:
+	            _this8.onerror();
+	            _this8.closeAndRetry();
+	            break;
+	          default:
+	            throw "unhandled poll status " + status;
+	        }
+	      });
+	    }
+	  }, {
+	    key: "send",
+	    value: function send(body) {
+	      var _this9 = this;
+
+	      Ajax.request("POST", this.endpointURL(), "application/json", body, this.timeout, this.onerror.bind(this, "timeout"), function (resp) {
+	        if (!resp || resp.status !== 200) {
+	          _this9.onerror(status);
+	          _this9.closeAndRetry();
+	        }
+	      });
+	    }
+	  }, {
+	    key: "close",
+	    value: function close(code, reason) {
+	      this.readyState = SOCKET_STATES.closed;
+	      this.onclose();
+	    }
+	  }]);
+
+	  return LongPoll;
+	}();
+
+	var Ajax = exports.Ajax = function () {
+	  function Ajax() {
+	    _classCallCheck(this, Ajax);
+	  }
+
+	  _createClass(Ajax, null, [{
+	    key: "request",
+	    value: function request(method, endPoint, accept, body, timeout, ontimeout, callback) {
+	      if (window.XDomainRequest) {
+	        var req = new XDomainRequest(); // IE8, IE9
+	        this.xdomainRequest(req, method, endPoint, body, timeout, ontimeout, callback);
+	      } else {
+	        var req = window.XMLHttpRequest ? new XMLHttpRequest() : // IE7+, Firefox, Chrome, Opera, Safari
+	        new ActiveXObject("Microsoft.XMLHTTP"); // IE6, IE5
+	        this.xhrRequest(req, method, endPoint, accept, body, timeout, ontimeout, callback);
+	      }
+	    }
+	  }, {
+	    key: "xdomainRequest",
+	    value: function xdomainRequest(req, method, endPoint, body, timeout, ontimeout, callback) {
+	      var _this10 = this;
+
+	      req.timeout = timeout;
+	      req.open(method, endPoint);
+	      req.onload = function () {
+	        var response = _this10.parseJSON(req.responseText);
+	        callback && callback(response);
+	      };
+	      if (ontimeout) {
+	        req.ontimeout = ontimeout;
+	      }
+
+	      // Work around bug in IE9 that requires an attached onprogress handler
+	      req.onprogress = function () {};
+
+	      req.send(body);
+	    }
+	  }, {
+	    key: "xhrRequest",
+	    value: function xhrRequest(req, method, endPoint, accept, body, timeout, ontimeout, callback) {
+	      var _this11 = this;
+
+	      req.timeout = timeout;
+	      req.open(method, endPoint, true);
+	      req.setRequestHeader("Content-Type", accept);
+	      req.onerror = function () {
+	        callback && callback(null);
+	      };
+	      req.onreadystatechange = function () {
+	        if (req.readyState === _this11.states.complete && callback) {
+	          var response = _this11.parseJSON(req.responseText);
+	          callback(response);
+	        }
+	      };
+	      if (ontimeout) {
+	        req.ontimeout = ontimeout;
+	      }
+
+	      req.send(body);
+	    }
+	  }, {
+	    key: "parseJSON",
+	    value: function parseJSON(resp) {
+	      return resp && resp !== "" ? JSON.parse(resp) : null;
+	    }
+	  }, {
+	    key: "serialize",
+	    value: function serialize(obj, parentKey) {
+	      var queryStr = [];
+	      for (var key in obj) {
+	        if (!obj.hasOwnProperty(key)) {
+	          continue;
+	        }
+	        var paramKey = parentKey ? parentKey + "[" + key + "]" : key;
+	        var paramVal = obj[key];
+	        if ((typeof paramVal === "undefined" ? "undefined" : _typeof(paramVal)) === "object") {
+	          queryStr.push(this.serialize(paramVal, paramKey));
+	        } else {
+	          queryStr.push(encodeURIComponent(paramKey) + "=" + encodeURIComponent(paramVal));
+	        }
+	      }
+	      return queryStr.join("&");
+	    }
+	  }, {
+	    key: "appendParams",
+	    value: function appendParams(url, params) {
+	      if (Object.keys(params).length === 0) {
+	        return url;
+	      }
+
+	      var prefix = url.match(/\?/) ? "&" : "?";
+	      return "" + url + prefix + this.serialize(params);
+	    }
+	  }]);
+
+	  return Ajax;
+	}();
+
+	Ajax.states = { complete: 4 };
+
+	// Creates a timer that accepts a `timerCalc` function to perform
+	// calculated timeout retries, such as exponential backoff.
+	//
+	// ## Examples
+	//
+	//    let reconnectTimer = new Timer(() => this.connect(), function(tries){
+	//      return [1000, 5000, 10000][tries - 1] || 10000
+	//    })
+	//    reconnectTimer.scheduleTimeout() // fires after 1000
+	//    reconnectTimer.scheduleTimeout() // fires after 5000
+	//    reconnectTimer.reset()
+	//    reconnectTimer.scheduleTimeout() // fires after 1000
+	//
+
+	var Timer = function () {
+	  function Timer(callback, timerCalc) {
+	    _classCallCheck(this, Timer);
+
+	    this.callback = callback;
+	    this.timerCalc = timerCalc;
+	    this.timer = null;
+	    this.tries = 0;
+	  }
+
+	  _createClass(Timer, [{
+	    key: "reset",
+	    value: function reset() {
+	      this.tries = 0;
+	      clearTimeout(this.timer);
+	    }
+
+	    // Cancels any previous scheduleTimeout and schedules callback
+
+	  }, {
+	    key: "scheduleTimeout",
+	    value: function scheduleTimeout() {
+	      var _this12 = this;
+
+	      clearTimeout(this.timer);
+
+	      this.timer = setTimeout(function () {
+	        _this12.tries = _this12.tries + 1;
+	        _this12.callback();
+	      }, this.timerCalc(this.tries + 1));
+	    }
+	  }]);
+
+	  return Timer;
+	}();
+
+
+	})( false ? window.Phoenix = window.Phoenix || {} : exports);
+
+
+/***/ },
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27905,11 +28922,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _isomorphicFetch = __webpack_require__(264);
+	var _isomorphicFetch = __webpack_require__(265);
 
 	var _isomorphicFetch2 = _interopRequireDefault(_isomorphicFetch);
 
-	var _es6Promise = __webpack_require__(266);
+	var _es6Promise = __webpack_require__(267);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27958,19 +28975,19 @@
 	}
 
 /***/ },
-/* 264 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// the whatwg-fetch polyfill installs the fetch() function
 	// on the global object (window or self)
 	//
 	// Return that as the export for use in Webpack, Browserify etc.
-	__webpack_require__(265);
+	__webpack_require__(266);
 	module.exports = self.fetch.bind(self);
 
 
 /***/ },
-/* 265 */
+/* 266 */
 /***/ function(module, exports) {
 
 	(function(self) {
@@ -28409,7 +29426,7 @@
 
 
 /***/ },
-/* 266 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
@@ -28542,7 +29559,7 @@
 	    function lib$es6$promise$asap$$attemptVertx() {
 	      try {
 	        var r = require;
-	        var vertx = __webpack_require__(268);
+	        var vertx = __webpack_require__(269);
 	        lib$es6$promise$asap$$vertxNext = vertx.runOnLoop || vertx.runOnContext;
 	        return lib$es6$promise$asap$$useVertxTimer();
 	      } catch(e) {
@@ -29360,7 +30377,7 @@
 	    };
 
 	    /* global define:true module:true window: true */
-	    if ("function" === 'function' && __webpack_require__(269)['amd']) {
+	    if ("function" === 'function' && __webpack_require__(270)['amd']) {
 	      !(__WEBPACK_AMD_DEFINE_RESULT__ = function() { return lib$es6$promise$umd$$ES6Promise; }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    } else if (typeof module !== 'undefined' && module['exports']) {
 	      module['exports'] = lib$es6$promise$umd$$ES6Promise;
@@ -29372,10 +30389,10 @@
 	}).call(this);
 
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), (function() { return this; }()), __webpack_require__(267)(module)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), (function() { return this; }()), __webpack_require__(268)(module)))
 
 /***/ },
-/* 267 */
+/* 268 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -29391,20 +30408,163 @@
 
 
 /***/ },
-/* 268 */
+/* 269 */
 /***/ function(module, exports) {
 
 	/* (ignored) */
 
 /***/ },
-/* 269 */
+/* 270 */
 /***/ function(module, exports) {
 
 	module.exports = function() { throw new Error("define cannot be used indirect"); };
 
 
 /***/ },
-/* 270 */
+/* 271 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(6);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRedux = __webpack_require__(249);
+
+	var _reactRouter = __webpack_require__(164);
+
+	var _utils = __webpack_require__(264);
+
+	var _registrations = __webpack_require__(272);
+
+	var _registrations2 = _interopRequireDefault(_registrations);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var RegistrationsNew = function (_React$Component) {
+	  _inherits(RegistrationsNew, _React$Component);
+
+	  function RegistrationsNew() {
+	    _classCallCheck(this, RegistrationsNew);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(RegistrationsNew).apply(this, arguments));
+	  }
+
+	  _createClass(RegistrationsNew, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      (0, _utils.setDocumentTitle)('Sign up');
+	    }
+	  }, {
+	    key: '_handleSubmit',
+	    value: function _handleSubmit(e) {
+	      e.preventDefault();
+
+	      var dispatch = this.props.dispatch;
+
+
+	      var data = {
+	        first_name: this.refs.firstName.value,
+	        last_name: this.refs.lastName.value,
+	        email: this.refs.email.value,
+	        password: this.refs.password.value,
+	        password_confirmation: this.refs.passwordConfirmation.value
+	      };
+
+	      dispatch(_registrations2.default.signUp(data));
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var errors = this.props.errors;
+
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'view-container registrations new' },
+	        _react2.default.createElement(
+	          'main',
+	          null,
+	          _react2.default.createElement(
+	            'header',
+	            null,
+	            _react2.default.createElement('div', { className: 'logo' })
+	          ),
+	          _react2.default.createElement(
+	            'form',
+	            { onSubmit: this._handleSubmit.bind(this) },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'firstName', type: 'text', placeholder: 'First name', required: true }),
+	              (0, _utils.renderErrorsFor)(errors, 'first_name')
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'lastName', type: 'text', placeholder: 'Last name', required: true }),
+	              (0, _utils.renderErrorsFor)(errors, 'last_name')
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'email', type: 'email', placeholder: 'Email', required: true }),
+	              (0, _utils.renderErrorsFor)(errors, 'email')
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'password', type: 'password', placeholder: 'Password', required: true }),
+	              (0, _utils.renderErrorsFor)(errors, 'password')
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'passwordConfirmation', type: 'password', placeholder: 'Confirm password', required: true }),
+	              (0, _utils.renderErrorsFor)(errors, 'password_confirmation')
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { type: 'submit' },
+	              'Sign up'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            _reactRouter.Link,
+	            { to: '/sign_in' },
+	            'Sign in'
+	          )
+	        )
+	      );
+	    }
+	  }]);
+
+	  return RegistrationsNew;
+	}(_react2.default.Component);
+
+	var mapStateToProps = function mapStateToProps(state) {
+	  return {
+	    errors: state.registration.errors
+	  };
+	};
+
+	exports.default = (0, _reactRedux.connect)(mapStateToProps)(RegistrationsNew);
+
+/***/ },
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -29419,7 +30579,7 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _utils = __webpack_require__(263);
+	var _utils = __webpack_require__(264);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -29448,6 +30608,879 @@
 	};
 
 	exports.default = Actions;
+
+/***/ },
+/* 273 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(6);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRedux = __webpack_require__(249);
+
+	var _reactRouter = __webpack_require__(164);
+
+	var _utils = __webpack_require__(264);
+
+	var _sessions = __webpack_require__(262);
+
+	var _sessions2 = _interopRequireDefault(_sessions);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SessionsNew = function (_React$Component) {
+	  _inherits(SessionsNew, _React$Component);
+
+	  function SessionsNew() {
+	    _classCallCheck(this, SessionsNew);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SessionsNew).apply(this, arguments));
+	  }
+
+	  _createClass(SessionsNew, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      (0, _utils.setDocumentTitle)('Sign in');
+	    }
+	  }, {
+	    key: '_handleSubmit',
+	    value: function _handleSubmit(e) {
+	      e.preventDefault();
+
+	      var _refs = this.refs;
+	      var email = _refs.email;
+	      var password = _refs.password;
+	      var dispatch = this.props.dispatch;
+
+
+	      dispatch(_sessions2.default.signIn(email.value, password.value));
+	    }
+	  }, {
+	    key: '_renderError',
+	    value: function _renderError() {
+	      var error = this.props.error;
+
+
+	      if (!error) return false;
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'error' },
+	        error
+	      );
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'view-container sessions new' },
+	        _react2.default.createElement(
+	          'main',
+	          null,
+	          _react2.default.createElement(
+	            'header',
+	            null,
+	            _react2.default.createElement('div', { className: 'logo' })
+	          ),
+	          _react2.default.createElement(
+	            'form',
+	            { onSubmit: this._handleSubmit.bind(this) },
+	            this._renderError.call(this),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'email', type: 'Email', placeholder: 'Email', required: 'true', defaultValue: 'john@phoenix-trello.com' })
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'field' },
+	              _react2.default.createElement('input', { ref: 'password', type: 'password', placeholder: 'Password', required: 'true', defaultValue: '12345678' })
+	            ),
+	            _react2.default.createElement(
+	              'button',
+	              { type: 'submit' },
+	              'Sign in'
+	            )
+	          ),
+	          _react2.default.createElement(
+	            _reactRouter.Link,
+	            { to: '/sign_up' },
+	            'Create new account'
+	          )
+	        )
+	      );
+	    }
+	  }]);
+
+	  return SessionsNew;
+	}(_react2.default.Component);
+
+	var mapStateToProps = function mapStateToProps(state) {
+	  return state.session;
+	};
+
+	exports.default = (0, _reactRedux.connect)(mapStateToProps)(SessionsNew);
+
+/***/ },
+/* 274 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(6);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactRouter = __webpack_require__(164);
+
+	var _sessions = __webpack_require__(262);
+
+	var _sessions2 = _interopRequireDefault(_sessions);
+
+	var _reactGravatar = __webpack_require__(275);
+
+	var _reactGravatar2 = _interopRequireDefault(_reactGravatar);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Header = function (_React$Component) {
+	  _inherits(Header, _React$Component);
+
+	  function Header() {
+	    _classCallCheck(this, Header);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Header).call(this));
+	  }
+
+	  _createClass(Header, [{
+	    key: '_renderCurrentUser',
+	    value: function _renderCurrentUser() {
+	      var currentUser = this.props.currentUser;
+
+
+	      if (!currentUser) {
+	        return false;
+	      }
+
+	      var fullName = [currentUser.first_name, currentUser.last_name].join(' ');
+
+	      return _react2.default.createElement(
+	        'a',
+	        { className: 'current-user' },
+	        _react2.default.createElement(_reactGravatar2.default, { email: currentUser.email, https: true }),
+	        ' ',
+	        fullName
+	      );
+	    }
+	  }, {
+	    key: '_renderSignOutLink',
+	    value: function _renderSignOutLink() {
+	      if (!this.props.currentUser) {
+	        return false;
+	      }
+
+	      return _react2.default.createElement(
+	        'a',
+	        { href: '#', onClick: this._handleSignOutClick.bind(this) },
+	        _react2.default.createElement('i', { className: 'fa fa-sign-out' }),
+	        ' Sign out'
+	      );
+	    }
+	  }, {
+	    key: '_handleSignOutClick',
+	    value: function _handleSignOutClick(e) {
+	      e.preventDefault();
+
+	      this.props.dispatch(_sessions2.default.signOut());
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'header',
+	        { className: 'main-header' },
+	        _react2.default.createElement(
+	          'nav',
+	          null,
+	          _react2.default.createElement(
+	            'ul',
+	            null,
+	            _react2.default.createElement(
+	              'li',
+	              null,
+	              _react2.default.createElement(
+	                _reactRouter.Link,
+	                { to: '/' },
+	                _react2.default.createElement('i', { className: 'fa fa-columns' }),
+	                ' Boards'
+	              )
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          _reactRouter.Link,
+	          { to: '/' },
+	          _react2.default.createElement('span', { className: 'logo' })
+	        ),
+	        _react2.default.createElement(
+	          'nav',
+	          { className: 'right' },
+	          _react2.default.createElement(
+	            'ul',
+	            null,
+	            _react2.default.createElement(
+	              'li',
+	              null,
+	              this._renderCurrentUser()
+	            ),
+	            _react2.default.createElement(
+	              'li',
+	              null,
+	              this._renderSignOutLink()
+	            )
+	          )
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Header;
+	}(_react2.default.Component);
+
+	exports.default = Header;
+
+/***/ },
+/* 275 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// Generated by CoffeeScript 1.10.0
+	var React, isRetina, md5, querystring;
+
+	React = __webpack_require__(6);
+
+	md5 = __webpack_require__(276);
+
+	querystring = __webpack_require__(280);
+
+	isRetina = __webpack_require__(283);
+
+	module.exports = React.createClass({
+	  displayName: 'Gravatar',
+	  propTypes: {
+	    email: React.PropTypes.string,
+	    md5: React.PropTypes.string,
+	    size: React.PropTypes.number,
+	    rating: React.PropTypes.string,
+	    https: React.PropTypes.bool,
+	    "default": React.PropTypes.string,
+	    className: React.PropTypes.string
+	  },
+	  getDefaultProps: function() {
+	    return {
+	      size: 50,
+	      rating: 'g',
+	      https: false,
+	      "default": "retro"
+	    };
+	  },
+	  render: function() {
+	    var base, className, hash, modernBrowser, query, retinaQuery, retinaSrc, src;
+	    base = this.props.https ? "https://secure.gravatar.com/avatar/" : 'http://www.gravatar.com/avatar/';
+	    query = querystring.stringify({
+	      s: this.props.size,
+	      r: this.props.rating,
+	      d: this.props["default"]
+	    });
+	    retinaQuery = querystring.stringify({
+	      s: this.props.size * 2,
+	      r: this.props.rating,
+	      d: this.props["default"]
+	    });
+	    if (this.props.md5) {
+	      hash = this.props.md5;
+	    } else if (this.props.email) {
+	      hash = md5(this.props.email);
+	    } else {
+	      console.warn('Gravatar image can not be fetched. Either the "email" or "md5" prop must be specified.');
+	      return React.createElement("script", null);
+	    }
+	    src = base + hash + "?" + query;
+	    retinaSrc = base + hash + "?" + retinaQuery;
+	    modernBrowser = true;
+	    if (typeof window !== "undefined" && window !== null) {
+	      modernBrowser = 'srcset' in document.createElement('img');
+	    }
+	    className = 'react-gravatar';
+	    if (this.props.className) {
+	      className = className + " " + this.props.className;
+	    }
+	    if (!modernBrowser && isRetina()) {
+	      return React.createElement("img", Object.assign({
+	        "style": this.props.style,
+	        "src": retinaSrc,
+	        "height": this.props.size,
+	        "width": this.props.size
+	      }, this.props, {
+	        "className": className
+	      }));
+	    } else {
+	      return React.createElement("img", Object.assign({
+	        "style": this.props.style,
+	        "src": src,
+	        "srcSet": retinaSrc + " 2x",
+	        "height": this.props.size,
+	        "width": this.props.size
+	      }, this.props, {
+	        "className": className
+	      }));
+	    }
+	  }
+	});
+
+
+/***/ },
+/* 276 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(){
+	  var crypt = __webpack_require__(277),
+	      utf8 = __webpack_require__(278).utf8,
+	      isBuffer = __webpack_require__(279),
+	      bin = __webpack_require__(278).bin,
+
+	  // The core
+	  md5 = function (message, options) {
+	    // Convert to byte array
+	    if (message.constructor == String)
+	      if (options && options.encoding === 'binary')
+	        message = bin.stringToBytes(message);
+	      else
+	        message = utf8.stringToBytes(message);
+	    else if (isBuffer(message))
+	      message = Array.prototype.slice.call(message, 0);
+	    else if (!Array.isArray(message))
+	      message = message.toString();
+	    // else, assume byte array already
+
+	    var m = crypt.bytesToWords(message),
+	        l = message.length * 8,
+	        a =  1732584193,
+	        b = -271733879,
+	        c = -1732584194,
+	        d =  271733878;
+
+	    // Swap endian
+	    for (var i = 0; i < m.length; i++) {
+	      m[i] = ((m[i] <<  8) | (m[i] >>> 24)) & 0x00FF00FF |
+	             ((m[i] << 24) | (m[i] >>>  8)) & 0xFF00FF00;
+	    }
+
+	    // Padding
+	    m[l >>> 5] |= 0x80 << (l % 32);
+	    m[(((l + 64) >>> 9) << 4) + 14] = l;
+
+	    // Method shortcuts
+	    var FF = md5._ff,
+	        GG = md5._gg,
+	        HH = md5._hh,
+	        II = md5._ii;
+
+	    for (var i = 0; i < m.length; i += 16) {
+
+	      var aa = a,
+	          bb = b,
+	          cc = c,
+	          dd = d;
+
+	      a = FF(a, b, c, d, m[i+ 0],  7, -680876936);
+	      d = FF(d, a, b, c, m[i+ 1], 12, -389564586);
+	      c = FF(c, d, a, b, m[i+ 2], 17,  606105819);
+	      b = FF(b, c, d, a, m[i+ 3], 22, -1044525330);
+	      a = FF(a, b, c, d, m[i+ 4],  7, -176418897);
+	      d = FF(d, a, b, c, m[i+ 5], 12,  1200080426);
+	      c = FF(c, d, a, b, m[i+ 6], 17, -1473231341);
+	      b = FF(b, c, d, a, m[i+ 7], 22, -45705983);
+	      a = FF(a, b, c, d, m[i+ 8],  7,  1770035416);
+	      d = FF(d, a, b, c, m[i+ 9], 12, -1958414417);
+	      c = FF(c, d, a, b, m[i+10], 17, -42063);
+	      b = FF(b, c, d, a, m[i+11], 22, -1990404162);
+	      a = FF(a, b, c, d, m[i+12],  7,  1804603682);
+	      d = FF(d, a, b, c, m[i+13], 12, -40341101);
+	      c = FF(c, d, a, b, m[i+14], 17, -1502002290);
+	      b = FF(b, c, d, a, m[i+15], 22,  1236535329);
+
+	      a = GG(a, b, c, d, m[i+ 1],  5, -165796510);
+	      d = GG(d, a, b, c, m[i+ 6],  9, -1069501632);
+	      c = GG(c, d, a, b, m[i+11], 14,  643717713);
+	      b = GG(b, c, d, a, m[i+ 0], 20, -373897302);
+	      a = GG(a, b, c, d, m[i+ 5],  5, -701558691);
+	      d = GG(d, a, b, c, m[i+10],  9,  38016083);
+	      c = GG(c, d, a, b, m[i+15], 14, -660478335);
+	      b = GG(b, c, d, a, m[i+ 4], 20, -405537848);
+	      a = GG(a, b, c, d, m[i+ 9],  5,  568446438);
+	      d = GG(d, a, b, c, m[i+14],  9, -1019803690);
+	      c = GG(c, d, a, b, m[i+ 3], 14, -187363961);
+	      b = GG(b, c, d, a, m[i+ 8], 20,  1163531501);
+	      a = GG(a, b, c, d, m[i+13],  5, -1444681467);
+	      d = GG(d, a, b, c, m[i+ 2],  9, -51403784);
+	      c = GG(c, d, a, b, m[i+ 7], 14,  1735328473);
+	      b = GG(b, c, d, a, m[i+12], 20, -1926607734);
+
+	      a = HH(a, b, c, d, m[i+ 5],  4, -378558);
+	      d = HH(d, a, b, c, m[i+ 8], 11, -2022574463);
+	      c = HH(c, d, a, b, m[i+11], 16,  1839030562);
+	      b = HH(b, c, d, a, m[i+14], 23, -35309556);
+	      a = HH(a, b, c, d, m[i+ 1],  4, -1530992060);
+	      d = HH(d, a, b, c, m[i+ 4], 11,  1272893353);
+	      c = HH(c, d, a, b, m[i+ 7], 16, -155497632);
+	      b = HH(b, c, d, a, m[i+10], 23, -1094730640);
+	      a = HH(a, b, c, d, m[i+13],  4,  681279174);
+	      d = HH(d, a, b, c, m[i+ 0], 11, -358537222);
+	      c = HH(c, d, a, b, m[i+ 3], 16, -722521979);
+	      b = HH(b, c, d, a, m[i+ 6], 23,  76029189);
+	      a = HH(a, b, c, d, m[i+ 9],  4, -640364487);
+	      d = HH(d, a, b, c, m[i+12], 11, -421815835);
+	      c = HH(c, d, a, b, m[i+15], 16,  530742520);
+	      b = HH(b, c, d, a, m[i+ 2], 23, -995338651);
+
+	      a = II(a, b, c, d, m[i+ 0],  6, -198630844);
+	      d = II(d, a, b, c, m[i+ 7], 10,  1126891415);
+	      c = II(c, d, a, b, m[i+14], 15, -1416354905);
+	      b = II(b, c, d, a, m[i+ 5], 21, -57434055);
+	      a = II(a, b, c, d, m[i+12],  6,  1700485571);
+	      d = II(d, a, b, c, m[i+ 3], 10, -1894986606);
+	      c = II(c, d, a, b, m[i+10], 15, -1051523);
+	      b = II(b, c, d, a, m[i+ 1], 21, -2054922799);
+	      a = II(a, b, c, d, m[i+ 8],  6,  1873313359);
+	      d = II(d, a, b, c, m[i+15], 10, -30611744);
+	      c = II(c, d, a, b, m[i+ 6], 15, -1560198380);
+	      b = II(b, c, d, a, m[i+13], 21,  1309151649);
+	      a = II(a, b, c, d, m[i+ 4],  6, -145523070);
+	      d = II(d, a, b, c, m[i+11], 10, -1120210379);
+	      c = II(c, d, a, b, m[i+ 2], 15,  718787259);
+	      b = II(b, c, d, a, m[i+ 9], 21, -343485551);
+
+	      a = (a + aa) >>> 0;
+	      b = (b + bb) >>> 0;
+	      c = (c + cc) >>> 0;
+	      d = (d + dd) >>> 0;
+	    }
+
+	    return crypt.endian([a, b, c, d]);
+	  };
+
+	  // Auxiliary functions
+	  md5._ff  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b & c | ~b & d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._gg  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b & d | c & ~d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._hh  = function (a, b, c, d, x, s, t) {
+	    var n = a + (b ^ c ^ d) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+	  md5._ii  = function (a, b, c, d, x, s, t) {
+	    var n = a + (c ^ (b | ~d)) + (x >>> 0) + t;
+	    return ((n << s) | (n >>> (32 - s))) + b;
+	  };
+
+	  // Package private blocksize
+	  md5._blocksize = 16;
+	  md5._digestsize = 16;
+
+	  module.exports = function (message, options) {
+	    if(typeof message == 'undefined')
+	      return;
+
+	    var digestbytes = crypt.wordsToBytes(md5(message, options));
+	    return options && options.asBytes ? digestbytes :
+	        options && options.asString ? bin.bytesToString(digestbytes) :
+	        crypt.bytesToHex(digestbytes);
+	  };
+
+	})();
+
+
+/***/ },
+/* 277 */
+/***/ function(module, exports) {
+
+	(function() {
+	  var base64map
+	      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+
+	  crypt = {
+	    // Bit-wise rotation left
+	    rotl: function(n, b) {
+	      return (n << b) | (n >>> (32 - b));
+	    },
+
+	    // Bit-wise rotation right
+	    rotr: function(n, b) {
+	      return (n << (32 - b)) | (n >>> b);
+	    },
+
+	    // Swap big-endian to little-endian and vice versa
+	    endian: function(n) {
+	      // If number given, swap endian
+	      if (n.constructor == Number) {
+	        return crypt.rotl(n, 8) & 0x00FF00FF | crypt.rotl(n, 24) & 0xFF00FF00;
+	      }
+
+	      // Else, assume array and swap all items
+	      for (var i = 0; i < n.length; i++)
+	        n[i] = crypt.endian(n[i]);
+	      return n;
+	    },
+
+	    // Generate an array of any length of random bytes
+	    randomBytes: function(n) {
+	      for (var bytes = []; n > 0; n--)
+	        bytes.push(Math.floor(Math.random() * 256));
+	      return bytes;
+	    },
+
+	    // Convert a byte array to big-endian 32-bit words
+	    bytesToWords: function(bytes) {
+	      for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+	        words[b >>> 5] |= bytes[i] << (24 - b % 32);
+	      return words;
+	    },
+
+	    // Convert big-endian 32-bit words to a byte array
+	    wordsToBytes: function(words) {
+	      for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+	        bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a hex string
+	    bytesToHex: function(bytes) {
+	      for (var hex = [], i = 0; i < bytes.length; i++) {
+	        hex.push((bytes[i] >>> 4).toString(16));
+	        hex.push((bytes[i] & 0xF).toString(16));
+	      }
+	      return hex.join('');
+	    },
+
+	    // Convert a hex string to a byte array
+	    hexToBytes: function(hex) {
+	      for (var bytes = [], c = 0; c < hex.length; c += 2)
+	        bytes.push(parseInt(hex.substr(c, 2), 16));
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a base-64 string
+	    bytesToBase64: function(bytes) {
+	      for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+	        var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+	        for (var j = 0; j < 4; j++)
+	          if (i * 8 + j * 6 <= bytes.length * 8)
+	            base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
+	          else
+	            base64.push('=');
+	      }
+	      return base64.join('');
+	    },
+
+	    // Convert a base-64 string to a byte array
+	    base64ToBytes: function(base64) {
+	      // Remove non-base-64 characters
+	      base64 = base64.replace(/[^A-Z0-9+\/]/ig, '');
+
+	      for (var bytes = [], i = 0, imod4 = 0; i < base64.length;
+	          imod4 = ++i % 4) {
+	        if (imod4 == 0) continue;
+	        bytes.push(((base64map.indexOf(base64.charAt(i - 1))
+	            & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2))
+	            | (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
+	      }
+	      return bytes;
+	    }
+	  };
+
+	  module.exports = crypt;
+	})();
+
+
+/***/ },
+/* 278 */
+/***/ function(module, exports) {
+
+	var charenc = {
+	  // UTF-8 encoding
+	  utf8: {
+	    // Convert a string to a byte array
+	    stringToBytes: function(str) {
+	      return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
+	    },
+
+	    // Convert a byte array to a string
+	    bytesToString: function(bytes) {
+	      return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
+	    }
+	  },
+
+	  // Binary encoding
+	  bin: {
+	    // Convert a string to a byte array
+	    stringToBytes: function(str) {
+	      for (var bytes = [], i = 0; i < str.length; i++)
+	        bytes.push(str.charCodeAt(i) & 0xFF);
+	      return bytes;
+	    },
+
+	    // Convert a byte array to a string
+	    bytesToString: function(bytes) {
+	      for (var str = [], i = 0; i < bytes.length; i++)
+	        str.push(String.fromCharCode(bytes[i]));
+	      return str.join('');
+	    }
+	  }
+	};
+
+	module.exports = charenc;
+
+
+/***/ },
+/* 279 */
+/***/ function(module, exports) {
+
+	/**
+	 * Determine if an object is Buffer
+	 *
+	 * Author:   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+	 * License:  MIT
+	 *
+	 * `npm install is-buffer`
+	 */
+
+	module.exports = function (obj) {
+	  return !!(obj != null &&
+	    (obj._isBuffer || // For Safari 5-7 (missing Object.prototype.constructor)
+	      (obj.constructor &&
+	      typeof obj.constructor.isBuffer === 'function' &&
+	      obj.constructor.isBuffer(obj))
+	    ))
+	}
+
+
+/***/ },
+/* 280 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	exports.decode = exports.parse = __webpack_require__(281);
+	exports.encode = exports.stringify = __webpack_require__(282);
+
+
+/***/ },
+/* 281 */
+/***/ function(module, exports) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	'use strict';
+
+	// If obj.hasOwnProperty has been overridden, then calling
+	// obj.hasOwnProperty(prop) will break.
+	// See: https://github.com/joyent/node/issues/1707
+	function hasOwnProperty(obj, prop) {
+	  return Object.prototype.hasOwnProperty.call(obj, prop);
+	}
+
+	module.exports = function(qs, sep, eq, options) {
+	  sep = sep || '&';
+	  eq = eq || '=';
+	  var obj = {};
+
+	  if (typeof qs !== 'string' || qs.length === 0) {
+	    return obj;
+	  }
+
+	  var regexp = /\+/g;
+	  qs = qs.split(sep);
+
+	  var maxKeys = 1000;
+	  if (options && typeof options.maxKeys === 'number') {
+	    maxKeys = options.maxKeys;
+	  }
+
+	  var len = qs.length;
+	  // maxKeys <= 0 means that we should not limit keys count
+	  if (maxKeys > 0 && len > maxKeys) {
+	    len = maxKeys;
+	  }
+
+	  for (var i = 0; i < len; ++i) {
+	    var x = qs[i].replace(regexp, '%20'),
+	        idx = x.indexOf(eq),
+	        kstr, vstr, k, v;
+
+	    if (idx >= 0) {
+	      kstr = x.substr(0, idx);
+	      vstr = x.substr(idx + 1);
+	    } else {
+	      kstr = x;
+	      vstr = '';
+	    }
+
+	    k = decodeURIComponent(kstr);
+	    v = decodeURIComponent(vstr);
+
+	    if (!hasOwnProperty(obj, k)) {
+	      obj[k] = v;
+	    } else if (Array.isArray(obj[k])) {
+	      obj[k].push(v);
+	    } else {
+	      obj[k] = [obj[k], v];
+	    }
+	  }
+
+	  return obj;
+	};
+
+
+/***/ },
+/* 282 */
+/***/ function(module, exports) {
+
+	// Copyright Joyent, Inc. and other Node contributors.
+	//
+	// Permission is hereby granted, free of charge, to any person obtaining a
+	// copy of this software and associated documentation files (the
+	// "Software"), to deal in the Software without restriction, including
+	// without limitation the rights to use, copy, modify, merge, publish,
+	// distribute, sublicense, and/or sell copies of the Software, and to permit
+	// persons to whom the Software is furnished to do so, subject to the
+	// following conditions:
+	//
+	// The above copyright notice and this permission notice shall be included
+	// in all copies or substantial portions of the Software.
+	//
+	// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+	// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+	// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+	// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+	// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+	'use strict';
+
+	var stringifyPrimitive = function(v) {
+	  switch (typeof v) {
+	    case 'string':
+	      return v;
+
+	    case 'boolean':
+	      return v ? 'true' : 'false';
+
+	    case 'number':
+	      return isFinite(v) ? v : '';
+
+	    default:
+	      return '';
+	  }
+	};
+
+	module.exports = function(obj, sep, eq, name) {
+	  sep = sep || '&';
+	  eq = eq || '=';
+	  if (obj === null) {
+	    obj = undefined;
+	  }
+
+	  if (typeof obj === 'object') {
+	    return Object.keys(obj).map(function(k) {
+	      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+	      if (Array.isArray(obj[k])) {
+	        return obj[k].map(function(v) {
+	          return ks + encodeURIComponent(stringifyPrimitive(v));
+	        }).join(sep);
+	      } else {
+	        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+	      }
+	    }).join(sep);
+
+	  }
+
+	  if (!name) return '';
+	  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+	         encodeURIComponent(stringifyPrimitive(obj));
+	};
+
+
+/***/ },
+/* 283 */
+/***/ function(module, exports) {
+
+	module.exports = function() {
+	  var mediaQuery;
+	  if (typeof window !== "undefined" && window !== null) {
+	    mediaQuery = "(-webkit-min-device-pixel-ratio: 1.25), (min--moz-device-pixel-ratio: 1.25), (-o-min-device-pixel-ratio: 5/4), (min-resolution: 1.25dppx)";
+	    if (window.devicePixelRatio > 1.25) {
+	      return true;
+	    }
+	    if (window.matchMedia && window.matchMedia(mediaQuery).matches) {
+	      return true;
+	    }
+	  }
+	  return false;
+	};
+
 
 /***/ }
 /******/ ]);
