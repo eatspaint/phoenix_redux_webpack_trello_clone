@@ -26777,6 +26777,7 @@
 	var initialState = {
 	  currentUser: null,
 	  socket: null,
+	  channel: null,
 	  error: null
 	};
 
@@ -26788,11 +26789,14 @@
 	    case _constants2.default.CURRENT_USER:
 	      return _extends({}, state, { currentUser: action.currentUser });
 
-	    case _constants2.default.SESSIONS_ERROR:
-	      return _extends({}, state, { error: action.error });
-
 	    case _constants2.default.USER_SIGNED_OUT:
 	      return initialState;
+
+	    case Constatnts.SOCKET_CONNECTED:
+	      return _extends({}, state, { socket: action.socket, channel: action.channel });
+
+	    case _constants2.default.SESSIONS_ERROR:
+	      return _extends({}, state, { error: action.error });
 
 	    default:
 	      return state;
@@ -27796,6 +27800,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.setCurrentUser = setCurrentUser;
 
 	var _reactRouterRedux = __webpack_require__(241);
 
@@ -27813,6 +27818,22 @@
 	  dispatch({
 	    type: _constants2.default.CURRENT_USER,
 	    currentUser: user
+	  });
+
+	  var socket = new _phoenix.Socket('/socket', {
+	    params: { token: localStorage.getItem('phoenixAuthToken') }
+	  });
+
+	  socket.connect();
+
+	  var channel = socket.channel('users:' + user.id);
+
+	  channel.join().receive('ok', function () {
+	    dispatch({
+	      type: _constants2.default.SOCKET_CONNECTED,
+	      socket: socket,
+	      channel: channel
+	    });
 	  });
 	};
 
@@ -27867,7 +27888,6 @@
 	      });
 	    };
 	  }
-
 	};
 
 	exports.default = Actions;
@@ -29429,7 +29449,7 @@
 /* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process, global, module) {/*!
 	 * @overview es6-promise - a tiny implementation of Promises/A+.
 	 * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
 	 * @license   Licensed under MIT license
