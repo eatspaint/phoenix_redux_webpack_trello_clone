@@ -25,6 +25,10 @@ export default function reducer(state = initialState, action = {}) {
       const { ownedBoards } = state;
       return { ...state, ownedBoards: [action.board].concat(ownedBoards) };
 
+    case Constants.BOARDS_ADDED:
+      const { invitedBoards } = state;
+      return { ...state, invitedBoards: [action.board].concat(invitedBoards) };
+
     default:
       return state;
   }

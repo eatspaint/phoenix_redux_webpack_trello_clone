@@ -4,6 +4,7 @@ import { Socket }                         from 'phoenix';
 import { httpGet, httpPost, httpDelete }  from '../utils';
 
 export function setCurrentUser(dispatch, user) {
+
   dispatch({
     type: Constants.CURRENT_USER,
     currentUser: user,
@@ -23,6 +24,10 @@ export function setCurrentUser(dispatch, user) {
       socket: socket,
       channel: channel,
     });
+  });
+  
+  channel.on('boards:add', (msg) => {
+
   });
 };
 
